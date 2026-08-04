@@ -1,4 +1,4 @@
-const API = "http://127.0.0.1:8000";
+const API = "https://bike-i06t.onrender.com";
 
 async function sendResetLink() {
 
