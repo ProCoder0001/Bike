@@ -1,33 +1,36 @@
 import os
-import smtplib
+import requests
 
-from email.mime.text import MIMEText
-from email.utils import formataddr
 from dotenv import load_dotenv
 
 load_dotenv()
 
-SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_EMAIL = os.getenv("SMTP_EMAIL")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
+
 SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "Bike Service Booking")
-SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", SMTP_EMAIL)
+SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL")
 
 
 def _send_email(receiver_email: str, subject: str, body: str):
     print("Sending email to:", receiver_email)
 
-    message = MIMEText(body)
-    message["Subject"] = subject
-    message["From"] = formataddr((SMTP_FROM_NAME, SMTP_FROM_EMAIL))
-    message["To"] = receiver_email
+    payload = {
+        "sender": {"name": SMTP_FROM_NAME, "email": SMTP_FROM_EMAIL},
+        "to": [{"email": receiver_email}],
+        "subject": subject,
+        "textContent": body,
+    }
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json",
+    }
 
-    server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
-    server.starttls()
-    server.login(SMTP_EMAIL, SMTP_PASSWORD)
-    server.sendmail(SMTP_FROM_EMAIL, receiver_email, message.as_string())
-    server.quit()
+    response = requests.post(BREVO_API_URL, json=payload, headers=headers, timeout=15)
+
+    if response.status_code >= 300:
+        raise Exception(f"Brevo API error {response.status_code}: {response.text}")
 
     print("Email sent successfully to:", receiver_email)
 
