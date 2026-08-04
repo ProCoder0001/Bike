@@ -2,7 +2,7 @@
    API base + session helpers, shared by every page.
    Edit API_BASE to point at your running FastAPI backend.
    =========================================================== */
-const API_BASE = window.API_BASE || "http://localhost:8000";
+const API_BASE = window.API_BASE || "https://bike-i06t.onrender.com";
 
 const Session = {
   setSession(token, user) {
